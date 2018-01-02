@@ -1,6 +1,13 @@
 const passport = require('passport'),
   GoogleStrategy = require('passport-google-oauth20').Strategy,
+  mongoose = require('mongoose'),
   Keys = require('../config/Keys');
+
+const User = mongoose.model('users');
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
 
 passport.use(
   new GoogleStrategy(
@@ -10,9 +17,17 @@ passport.use(
       callbackURL: '/a/g/cb'
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log('access Token:', accessToken);
-      console.log('refresh Token:', refreshToken);
-      console.log('Profile :', profile);
+      User.findOne({ googleId: profile.id }).then(existingUser => {
+        if (existingUser) {
+          // User already exists do something!
+          done(null, existingUser);
+        } else {
+          // we don't have a user record with this ID, make a new recor
+          new User({ googleId: profile.id })
+            .save()
+            .then(user => done(null, user));
+        }
+      });
     }
   )
 );

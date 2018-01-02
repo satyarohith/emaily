@@ -3,6 +3,7 @@ const express = require('express'),
   port = process.env.PORT || 5000,
   mongoose = require('mongoose'),
   Keys = require('./config/Keys');
+require('./models/User');
 require('./services/passport');
 
 mongoose.connect(Keys.mongoURI);
